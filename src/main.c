@@ -7,38 +7,13 @@
 #include <stdio.h>
 #include <unistd.h>
 #include <fcntl.h>
-// #include <string.h>
-// #include <ctype.h> 
 
 #define VBXE_D600_BASE 0xD600
 #define VBXE_D700_BASE 0xD700
 
-//unsigned short* VBXE_BASE_ADDR = 0x00FE;  // Put it in zero page
 struct __vbxe* VBXE = 0xD640; // Store the pointer in the zero page
 
-/*
-void vbxe_version(void* VBXE_BASE, byte* vbxe_major_version, byte* vbxe_minor_version) {
-    *vbxe_major_version = *((byte*)VBXE_BASE + VBXE_CORE_VERSION);
-    *vbxe_minor_version = *((byte*)VBXE_BASE + VBXE_CORE_VERSION + 1);
-}
-*/
-
 bool vbxe_detect() {
-    /*
-    byte vbxe_major_version, vbxe_minor_version;
-
-    *VBXE_BASE_ADDR = VBXE_D600_BASE;
-    vbxe_version((void*)*VBXE_BASE_ADDR, &vbxe_major_version, &vbxe_minor_version);
-
-    if(vbxe_major_version != 0x10 && (vbxe_minor_version & 0x70) != 0x20) {
-        *VBXE_BASE_ADDR = VBXE_D700_BASE;
-        vbxe_version((void*)VBXE_D700_BASE, &vbxe_major_version, &vbxe_minor_version);
-        if(vbxe_major_version != 0x10 && (vbxe_minor_version & 0x70) != 0x20) {
-            *VBXE_BASE_ADDR = 0x0000;
-            return false;
-        }
-    }
-    */
     // Try the first address
     if(VBXE_D640.CORE_VERSION != 0x10 && (VBXE_D640.MINOR_BERSION & 0x70) != 0x20) {
         // Try the second address
@@ -50,25 +25,6 @@ bool vbxe_detect() {
 
     return true;
 }
-
-/*
-void vbxe_disable()
-{
-   //   *((byte*)(*VBXE_BASE_ADDR + VBXE_VIDEO_CONTROL)) = 0x00;
-   VBXE->VIDEO_CONTROL = 0x00;
-}
-
-void vbxe_enable()
-{
-   //   *((byte*)(*VBXE_BASE_ADDR + VBXE_VIDEO_CONTROL)) = 0x01;
-    VBXE->VIDEO_CONTROL = 0x01;
-}
-
-void vbxe_clear_screen_mem()
-{
-
-}
-*/
 
 int main(char argc, char* argv[]) {
     // The memory window to the VBXE
@@ -87,11 +43,7 @@ int main(char argc, char* argv[]) {
 
     VBXE->VIDEO_CONTROL = 0x02;
 
-    //vbxe_disable();
-
     // Set memory window location to 0x8000 and let only the CPU have access
-    // *((byte*)(*VBXE_BASE_ADDR + VBXE_MEMAC_CTRL)) = 0x88;
-    // *((byte*)(*VBXE_BASE_ADDR + VBXE_MEM_BANK_SEL)) = 0x80;
     VBXE->MEMAC_CTRL = 0x88;
     VBXE->MEM_BANK_SEL = 0x80;
 
@@ -128,7 +80,6 @@ int main(char argc, char* argv[]) {
     VBXE->CSEL = 0x00;
     for(i = 0; i < 256; ++i) {
         read(fd, rgb, 3);
-        //printf("(%d %d %d) ", rgb[0], rgb[1], rgb[2]);
         VBXE->CR = rgb[0];
         VBXE->CG = rgb[1];
         VBXE->CB = rgb[2];
