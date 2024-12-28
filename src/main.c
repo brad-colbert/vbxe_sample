@@ -11,14 +11,14 @@
 #define VBXE_D600_BASE 0xD600
 #define VBXE_D700_BASE 0xD700
 
-struct __vbxe* VBXE = 0xD640; // Store the pointer in the zero page
+struct __vbxe* VBXE = &VBXE_D640; // Store the pointer in the zero page
 
 bool vbxe_detect() {
     // Try the first address
     if(VBXE_D640.CORE_VERSION != 0x10 && (VBXE_D640.MINOR_BERSION & 0x70) != 0x20) {
         // Try the second address
         if(VBXE_D740.CORE_VERSION != 0x10 && (VBXE_D740.MINOR_BERSION & 0x70) != 0x20) {
-            *VBXE = VBXE_D740;
+            VBXE = &VBXE_D740;
             return false;
         }
     }
@@ -52,9 +52,9 @@ int main(char argc, char* argv[]) {
     XDL[1] = XDLC_ATT | XDLC_END; // ATTRIB, END XDL
     XDL[2] = 239; // Repeat 239 lines
     // Overlay location (0x2000)
-    XDL[3] = 0;
-    XDL[4] = 2;
-    XDL[5] = 5;
+    XDL[3] = 0x00;
+    XDL[4] = 0x02;
+    XDL[5] = 0x00;
     // Step
     XDL[6] = 0x40; // 320 bytes
     XDL[7] = 0x01;
@@ -76,8 +76,8 @@ int main(char argc, char* argv[]) {
         return 1;
     }
     printf("Opened file %d\n", fd);
-    VBXE->PSEL = 0x00;
     VBXE->CSEL = 0x00;
+    VBXE->PSEL = 0x01;
     for(i = 0; i < 256; ++i) {
         read(fd, rgb, 3);
         VBXE->CR = rgb[0];
